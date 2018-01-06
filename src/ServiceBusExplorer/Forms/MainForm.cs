@@ -43,6 +43,7 @@ using Microsoft.Azure.NotificationHubs;
 using Microsoft.Azure.ServiceBusExplorer.Controls;
 using Microsoft.Azure.ServiceBusExplorer.Helpers;
 using Microsoft.ServiceBus.Messaging;
+using Microsoft.WindowsAPICodePack.Taskbar;
 using ConnectivityMode = Microsoft.ServiceBus.ConnectivityMode;
 #endregion
 
@@ -6721,6 +6722,7 @@ namespace Microsoft.Azure.ServiceBusExplorer.Forms
 
         private void MainForm_Shown(object sender, EventArgs e)
         {
+            LoadJumpList();
             try
             {
                 Refresh();
@@ -6945,6 +6947,25 @@ namespace Microsoft.Azure.ServiceBusExplorer.Forms
             {
                 Text = $@"Service Bus Explorer {version}";
             }
+        }
+
+        private void LoadJumpList()
+        {
+            // get where the app is running from
+            string cmdPath = Assembly.GetEntryAssembly().Location;
+
+            // create a jump list
+            JumpList jumpList = JumpList.CreateJumpList();
+
+            JumpListCustomCategory category = new JumpListCustomCategory("Namespaces");
+            if (serviceBusHelper.ServiceBusNamespaces != null)
+            {
+                serviceBusHelper.ServiceBusNamespaces.Select(x => new JumpListLink(cmdPath, x.Key) { Arguments = "/n " + x.Key });
+                category.AddJumpListItems(serviceBusHelper.ServiceBusNamespaces.Select(x => new JumpListLink(cmdPath, x.Key) { Arguments = "/n " + x.Key }).ToArray());
+                jumpList.AddCustomCategories(category);
+            }
+
+            jumpList.Refresh();
         }
 
         #endregion
